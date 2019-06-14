@@ -1,11 +1,8 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-//to make use currency node module
 require('mongoose-currency').loadType(mongoose);
-
 var Currency = mongoose.Types.Currency;
-
 
 var commentSchema = new Schema({
     rating:  {
@@ -30,7 +27,7 @@ var dishSchema = new Schema({
     name: {
         type: String,
         required: true,
-        unique: true///name is requered field
+        unique: true
     },
     description: {
         type: String,
@@ -61,10 +58,11 @@ var dishSchema = new Schema({
 },  
 {
     usePushEach: true,
-    timestamps: true////this will automatically add the created at and updated at, two timestamps into each document that is stored in our application and it'll automatically update these values
+    timestamps: true
 });
 
 
-var Dishes = mongoose.model('Dish', dishSchema);//constructing the model from schema
+
+var Dishes = mongoose.model('Dish', dishSchema);
 
 module.exports = Dishes;

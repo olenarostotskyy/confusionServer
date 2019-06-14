@@ -13,7 +13,9 @@ var leaderRouter = require('./routes/leaderRouter');
 
 //use of the Mongoose module, in order to establish the connection with the server.
 const mongoose = require('mongoose');
+
 const Dishes = require('./models/dishes');
+
 const url = 'mongodb://localhost:27017/conFusion';
 const connect = mongoose.connect(url);
 
