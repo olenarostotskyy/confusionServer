@@ -1,5 +1,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+
+
+const Dishes = require('../models/dishes');
 
 //using Express router
 const dishRouter = express.Router();
@@ -7,54 +11,75 @@ const dishRouter = express.Router();
 dishRouter.use(bodyParser.json());
 
 dishRouter.route('/')//the dishRouter.route means that by using this approach, we are declaring the endpoint at one single location. Whereby you can chain all get, PUT, POST, delete methods already do this dish router. 
-.all((req,res,next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    next();
-})
+
 .get((req,res,next) => {
-    res.end('Will send all the dishes to you!');
+    Dishes.find({})
+    .then((dishes) => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(dishes);
+    }, (err) => next(err))
+    .catch((err) => next(err));
 })
 .post((req, res, next) => {
-    res.end('Will add the dish: ' + req.body.name + ' with details: ' + req.body.description);
+Dishes.create(req.body)
+    .then((dish) => {
+        console.log('Dish Created ', dish);
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(dish);//res.json will take as an input in json string and then send it back over to my client. So, when you call res.json and supply the value and then it will simply take the parameter that you give here and then send it back as a json response.
+    }, (err) => next(err))
+    .catch((err) => next(err));
 })
 .put((req, res, next) => {
     res.statusCode = 403;
     res.end('PUT operation not supported on /dishes');
 })
 .delete((req, res, next) => {
-    res.end('Deleting all dishes');
+    Dishes.remove({})
+    .then((resp) => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(resp);
+    }, (err) => next(err))
+    .catch((err) => next(err));    
+});
+
+
+
+dishRouter.route('/:dishId')
+.get((req,res,next) => {
+    Dishes.findById(req.params.dishId)
+    .then((dish) => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(dish);
+    }, (err) => next(err))
+    .catch((err) => next(err));
 })
-
-
-
-dishRouter.route('/:id')//the dishRouter.route means that by using this approach, we are declaring the endpoint at one single location. Whereby you can chain all get, PUT, POST, delete methods already do this dish router. 
-.all((req,res,next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    next();
+.post((req, res, next) => {
+    res.statusCode = 403;
+    res.end('POST operation not supported on /dishes/'+ req.params.dishId);
 })
-
-.get( (req,res,next) => {
-    res.end('Will send details of the dish: ' 
-    + req.params.id +' to you!');
-})
-
-.post( (req, res, next) => {
-  res.statusCode = 403;
-  res.end('POST operation not supported on /dishes/'
-  + req.params.id);
-})
-
 .put((req, res, next) => {
-  res.write('Updating the dish: ' + req.params.id + '\n');
-  res.end('Will update the dish: ' 
-  + req.body.name + ' with details: ' + req.body.description);
+    Dishes.findByIdAndUpdate(req.params.dishId, {
+        $set: req.body
+    }, { new: true })
+    .then((dish) => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(dish);
+    }, (err) => next(err))
+    .catch((err) => next(err));
 })
-
-.delete( (req, res, next) => {
-    res.end('Deleting dish: '
-    + req.params.id);
+.delete((req, res, next) => {
+    Dishes.findByIdAndRemove(req.params.dishId)
+    .then((resp) => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(resp);
+    }, (err) => next(err))
+    .catch((err) => next(err));
 });
 
 module.exports = dishRouter;
