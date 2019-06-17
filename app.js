@@ -16,6 +16,11 @@ const mongoose = require('mongoose');
 
 const Dishes = require('./models/dishes');
 
+const Promotions = require('./models/promotions');
+
+const Leader = require('./models/leaders');
+
+
 const url = 'mongodb://localhost:27017/conFusion';
 const connect = mongoose.connect(url);
 
@@ -37,7 +42,38 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+
+
+//authorization
+function auth (req, res, next) {
+  console.log(req.headers);
+  var authHeader = req.headers.authorization;
+  if (!authHeader) {//we don't have header 
+      var err = new Error('You are not authenticated!');
+
+      res.setHeader('WWW-Authenticate', 'Basic');
+      err.status = 401;
+      return next(err);
+  }
+
+  var auth = new Buffer(authHeader.split(' ')[1], 'base64').toString().split(':');//the buffer enables you to split the value and then we also give the encoding of the buffer which is Base64 encoding here. So we will convert that to a buffer by splitting that into two parts (arrey of 2 elements)
+
+  var user = auth[0];//extract the username
+  var pass = auth[1];
+  if (user == 'admin' && pass == 'password') {
+      next(); // authorized (encoded)
+  } 
+  else { //error
+      var err = new Error('You are not authenticated!');
+      res.setHeader('WWW-Authenticate', 'Basic');      
+      err.status = 401;
+      next(err);
+  }
+}
+
+app.use(auth);//authentication
+
+app.use(express.static(path.join(__dirname, 'public')));//enables us to serve static data from the public folder
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
