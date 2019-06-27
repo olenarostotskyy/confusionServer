@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 var authenticate = require('../authenticate');
-
+const cors = require('./cors');
 
 const Dishes = require('../models/dishes');
 
@@ -14,6 +14,7 @@ dishRouter.use(bodyParser.json());
 
 //dish
 dishRouter.route('/')//the dishRouter.route means that by using this approach, we are declaring the endpoint at one single location. Whereby you can chain all get, PUT, POST, delete methods already do this dish router. 
+.options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
 
 .get((req,res,next) => {
     Dishes.find({})
